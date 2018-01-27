@@ -23,7 +23,8 @@ RUN echo "deb http://apt.datadoghq.com/ stable main" > /etc/apt/sources.list.d/d
 RUN curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/probe.sh > /probe.sh && \
     curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/entrypoint.sh > /entrypoint.sh && \
     curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/conf.d/docker_daemon.yaml > ${DD_ETC_ROOT}/conf.d/docker_daemon.yaml && \
-    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/config_builder.py > /config_builder.py
+    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/config_builder.py > /config_builder.py && \
+    chmod +x /probe.sh /entrypoint.sh /config_builder.py
 
 
 # Configure the Agent
