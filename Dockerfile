@@ -49,7 +49,7 @@ HEALTHCHECK --interval=5m --timeout=3s --retries=1 \
 
 # Install Nvidia python library + add ngi644/datadog_nvml check
 RUN /opt/datadog-agent/embedded/bin/pip install nvidia-ml-py==7.352.0 && \
-    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/Dockerfile > /etc/dd-agent/checks.d/nvml.py && \
+    curl https://raw.githubusercontent.com/ngi644/datadog_nvml/master/nvml.py > /etc/dd-agent/checks.d/nvml.py && \
     curl https://raw.githubusercontent.com/ngi644/datadog_nvml/master/nvml.yaml.default > /etc/dd-agent/conf.d/nvml.yaml.default
 
 ENTRYPOINT ["/entrypoint.sh"]
