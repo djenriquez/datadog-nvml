@@ -19,8 +19,12 @@ RUN echo "deb http://apt.datadoghq.com/ stable main" > /etc/apt/sources.list.d/d
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Add healthcheck script
-COPY probe.sh /probe.sh
+# Download required scripts
+RUN curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/probe.sh > /probe.sh && \
+    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/entrypoint.sh > /entrypoint.sh && \
+    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/conf.d/docker_daemon.yaml > ${DD_ETC_ROOT}/conf.d/docker_daemon.yaml && \
+    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/config_builder.py > /config_builder.py
+
 
 # Configure the Agent
 # 1. Remove dd-agent user from init.d configuration
@@ -31,11 +35,6 @@ RUN mv ${DD_ETC_ROOT}/datadog.conf.example ${DD_ETC_ROOT}/datadog.conf \
  && chmod +x /etc/init.d/datadog-agent \
  && chmod +x /probe.sh
 
-# Add Docker check
-COPY conf.d/docker_daemon.yaml ${DD_ETC_ROOT}/conf.d/docker_daemon.yaml
-# Add install and config files
-COPY entrypoint.sh /entrypoint.sh
-COPY config_builder.py /config_builder.py
 
 # Extra conf.d and checks.d
 VOLUME ["/conf.d", "/checks.d"]
@@ -47,8 +46,10 @@ EXPOSE 8125/udp 8126/tcp
 HEALTHCHECK --interval=5m --timeout=3s --retries=1 \
   CMD ./probe.sh
 
-# Install Nvidia python library
-RUN /opt/datadog-agent/embedded/bin/pip install nvidia-ml-py==7.352.0
+# Install Nvidia python library + add ngi644/datadog_nvml check
+RUN /opt/datadog-agent/embedded/bin/pip install nvidia-ml-py==7.352.0 && \
+    curl https://raw.githubusercontent.com/DataDog/docker-dd-agent/master/Dockerfile > /etc/dd-agent/checks.d/nvml.py && \
+    curl https://raw.githubusercontent.com/ngi644/datadog_nvml/master/nvml.yaml.default > /etc/dd-agent/conf.d/nvml.yaml.default
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["supervisord", "-n", "-c", "/etc/dd-agent/supervisor.conf"]
